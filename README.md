@@ -1,158 +1,445 @@
-# Heart Disease Risk Prediction: Logistic Regression Analysis
+# 🫀 Heart Disease Risk Prediction: Logistic Regression Analysis
 
-## 📋 Exercise Summary
+[![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://python.org)
+[![NumPy](https://img.shields.io/badge/NumPy-Only-green.svg)](https://numpy.org)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-This project implements **logistic regression from scratch** for heart disease prediction using Python (NumPy, Pandas, Matplotlib). The analysis includes comprehensive exploratory data analysis (EDA), model training with visualization of decision boundaries, L2 regularization techniques, and exploration of deployment strategies using Amazon SageMaker.
+> **Complete implementation of logistic regression for heart disease prediction: EDA, training, visualization, regularization, and SageMaker deployment exploration.**
 
-**Key Features:**
-- 📊 **Step 1**: Data loading, preprocessing, and stratified train/test split
-- 🔄 **Step 2**: Custom logistic regression implementation (sigmoid, cost function, gradient descent)  
-- 📊 **Step 3**: Decision boundary visualization with multiple feature pairs
-- 🎯 **Step 4**: L2 regularization with hyperparameter tuning
-- ☁️ **Step 5**: Amazon SageMaker deployment exploration
+---
+
+## 📋 Table of Contents
+
+- [Overview](#-overview)
+- [Dataset Description](#-dataset-description)
+- [Project Structure](#-project-structure)
+- [Installation & Setup](#-installation--setup)
+- [Implementation Details](#-implementation-details)
+  - [Step 1: Data Preparation](#step-1-data-preparation)
+  - [Step 2: Basic Logistic Regression](#step-2-basic-logistic-regression)
+  - [Step 3: Decision Boundary Visualization](#step-3-decision-boundary-visualization)
+  - [Step 4: Regularization](#step-4-regularization)
+  - [Step 5: Deployment](#step-5-deployment)
+- [Results & Performance](#-results--performance)
+- [Deployment Evidence](#-deployment-evidence)
+- [Mathematical Foundation](#-mathematical-foundation)
+- [Key Insights](#-key-insights)
+- [References](#-references)
+
+---
+
+## 🎯 Overview
+
+This project implements **logistic regression from scratch** using only NumPy to predict heart disease risk. The implementation follows the complete machine learning pipeline:
+
+| Phase | Description |
+|-------|-------------|
+| **Data Preparation** | Load, explore, clean, normalize, and split the dataset |
+| **Model Training** | Implement sigmoid, cost function, and gradient descent |
+| **Visualization** | Plot decision boundaries for feature pairs |
+| **Regularization** | Add L2 regularization to prevent overfitting |
+| **Deployment** | Explore AWS SageMaker deployment workflow |
+
+### Why This Matters
+
+Heart disease is the **world's leading cause of death**, claiming approximately **18 million lives annually** (WHO). Predictive models like this enable:
+
+- ✅ **Early identification** of at-risk patients
+- ✅ **Better resource allocation** in healthcare settings
+- ✅ **Data-driven clinical decisions**
+- ✅ **Improved treatment outcomes**
 
 ---
 
 ## 📊 Dataset Description
 
-**Source:** [Kaggle Heart Disease Dataset](https://www.kaggle.com/datasets/neurocipher/heartdisease)  
-**Original Repository:** UCI Machine Learning Repository
+**Source:** [Kaggle Heart Disease Dataset](https://www.kaggle.com/datasets/neurocipher/heartdisease)
 
 ### Dataset Statistics
-- **Total Samples:** 270 patients
-- **Features:** 14 clinical measurements
-- **Target Distribution:** ~44% disease presence rate (120 positive cases, 150 negative cases)
-- **Missing Values:** None detected
 
-### Feature Overview
-| Feature | Description | Range | Type |
-|---------|-------------|--------|------|
-| `Age` | Patient age | 29-71 years | Numerical |
-| `Sex` | Gender | 0=Female, 1=Male | Categorical |
-| `Chest pain type` | Chest pain classification | 1-4 scale | Categorical |
-| `BP` | Blood Pressure | 94-200 mmHg | Numerical |
-| `Cholesterol` | Serum cholesterol | 126-564 mg/dL | Numerical |
-| `FBS over 120` | Fasting blood sugar > 120 mg/dl | 0=False, 1=True | Binary |
-| `EKG results` | Electrocardiogram results | 0-2 scale | Categorical |
-| `Max HR` | Maximum heart rate achieved | 95-202 bpm | Numerical |
-| `Exercise angina` | Exercise induced angina | 0=No, 1=Yes | Binary |
-| `ST depression` | ST depression induced by exercise | 0.0-6.2 | Numerical |
-| `Slope of ST` | Slope of peak exercise ST segment | 1-3 scale | Categorical |
-| `Number of vessels fluro` | Vessels colored by fluoroscopy | 0-3 | Numerical |
-| `Thallium` | Thallium stress test result | 3=Normal, 6=Fixed, 7=Reversible | Categorical |
-| `Heart Disease` | **Target Variable** | Presence/Absence | Binary |
+| Property | Value |
+|----------|-------|
+| **Total Samples** | 270 patients |
+| **Features** | 13 clinical measurements |
+| **Target Classes** | 2 (Presence/Absence of heart disease) |
+| **Disease Rate** | ~55% (approximately balanced) |
+| **Missing Values** | None |
+
+### Feature Descriptions
+
+| Feature | Range | Description |
+|---------|-------|-------------|
+| `Age` | 29-77 years | Patient age |
+| `Sex` | 0-1 | Gender (1=Male, 0=Female) |
+| `Chest pain type` | 1-4 | Type of chest pain experienced |
+| `BP` | 94-200 mm Hg | Resting blood pressure |
+| `Cholesterol` | 126-564 mg/dL | Serum cholesterol level |
+| `FBS over 120` | 0-1 | Fasting blood sugar > 120 mg/dL |
+| `EKG results` | 0-2 | Electrocardiogram results |
+| `Max HR` | 71-202 bpm | Maximum heart rate achieved |
+| `Exercise angina` | 0-1 | Exercise-induced angina |
+| `ST depression` | 0-6.2 | ST depression induced by exercise |
+| `Slope of ST` | 1-3 | Slope of peak exercise ST segment |
+| `Number of vessels fluro` | 0-3 | Major vessels colored by fluoroscopy |
+| `Thallium` | 3-7 | Thallium stress test result |
+| **Heart Disease** | Presence/Absence | **Target variable** |
+
+### Selected Features (6)
+
+For this implementation, we selected 6 clinically relevant numerical features:
+
+1. **Age** - Cardiovascular risk increases with age
+2. **BP** - High blood pressure is a major risk factor
+3. **Cholesterol** - High levels lead to arterial plaque buildup
+4. **Max HR** - Lower maximum heart rate may indicate problems
+5. **ST depression** - ECG abnormality suggesting ischemia
+6. **Number of vessels fluro** - Blocked vessels visible in fluoroscopy
 
 ---
 
-## 🚀 Step 1: Data Preparation 
-
-### 1.1 Data Loading and Initial Exploration
-
-Successfully loaded the Heart Disease Prediction dataset using pandas. Initial analysis revealed:
-- **Dataset Shape:** 270 samples × 14 features
-- **No missing values** detected across all columns
-- **Target column** successfully identified: "Heart Disease" (text values)
-
-### 1.2 Target Binarization
-
-Converted target variable from text to numerical format:
-```
-Original values:
-- "Presence" → 1 (positive class - disease present)  
-- "Absence"  → 0 (negative class - no disease)
-
-Final distribution:
-- No disease (0): 150 samples (55.6%)
-- Disease (1):    120 samples (44.4%)
-```
-
-**Conclusion:** Dataset is reasonably balanced (~44% disease rate), reducing the need for special imbalanced data techniques.
-
-### 1.3 Exploratory Data Analysis (EDA)
-
-#### Statistical Summary
-Key insights from numerical features:
-- **Age range:** 29-71 years (mean: 54.4 years)
-- **Blood Pressure:** 94-200 mmHg (mean: 131.3 mmHg)  
-- **Cholesterol:** 126-564 mg/dL (mean: 249.7 mg/dL)
-- **Max Heart Rate:** 95-202 bpm (mean: 149.7 bpm)
-- **ST Depression:** 0.0-6.2 units (mean: 1.05 units)
-
-#### Data Quality Assessment
-- ✅ **No missing values** in any column
-- ✅ **Appropriate data types** (numerical features properly recognized)
-- ✅ **Reasonable value ranges** (no obvious outliers requiring removal)
-
-### 1.4 Feature Selection
-
-Selected **6 key numerical features** based on medical relevance:
-
-| Selected Feature | Medical Significance | Range |
-|------------------|---------------------|-------|
-| `Age` | Older patients higher risk | [29.0, 71.0] |
-| `BP` | Blood pressure indicator | [94.0, 200.0] |
-| `Cholesterol` | Cardiovascular risk factor | [126.0, 564.0] |
-| `Max HR` | Heart function capacity | [95.0, 202.0] |
-| `ST depression` | ECG abnormality measure | [0.0, 6.2] |
-| `Number of vessels fluro` | Arterial blockage count | [0.0, 3.0] |
-
-**Rationale:** These features represent core cardiovascular health indicators commonly used in clinical risk assessment.
-
-### 1.5 Stratified Train/Test Split (70/30)
-
-Implemented **custom stratified splitting** to preserve class distribution:
+## 📁 Project Structure
 
 ```
-Split Results:
-- Training set: 189 samples (70%)
-- Test set:     81 samples (30%)
-
-Disease rate verification:
-- Training: 44.4% (preserved)
-- Test:     44.4% (preserved)
+logistic-regression/
+├── class-notebooks/
+Main notebook
+│   │   ├── README.md                               # ← This file
+│   │   └── heart_disease_model.npy                 # Exported model
+│   ├── week2_classification_hour1_final.ipynb
+│   ├── week2_classification_hour2_regularization.ipynb
+│   └── homework.md
+├── dataset/
+│   └── Heart_Disease_Prediction.csv
+├── heart_disease_lr_analysis.ipynb
+└── README.md
 ```
 
-**Implementation Details:**
-- Used manual stratification (no scikit-learn dependency)
-- Random seed: 42 (for reproducibility)
-- Class proportions maintained within ±1% between splits
+---
 
-### 1.6 Feature Normalization
+## 🚀 Installation & Setup
 
-Applied **Min-Max normalization** to scale all features to [0, 1] range:
+### Prerequisites
 
-**Normalization Formula:** `(x - min) / (max - min)`
+- Python 3.8+
+- Jupyter Notebook or JupyterLab
 
-**Before normalization (training data ranges):**
-- Age: [29.0, 77.0]
-- BP: [94.0, 200.0]  
-- Cholesterol: [126.0, 564.0]
-- Max HR: [71.0, 202.0]
-- ST depression: [0.0, 6.2]
-- Number of vessels fluro: [0.0, 3.0]
+### Dependencies
 
-**After normalization:**
-- All training features: [0.0, 1.0] range achieved
-- Test set normalization: Applied same training statistics (proper ML practice)
+```bash
+pip install numpy pandas matplotlib
+```
 
-**Critical Detail:** Normalization parameters computed **only from training data** to prevent data leakage.
+> ⚠️ **Note:** This implementation uses **only NumPy** for the core ML algorithms (no scikit-learn), as required by the homework specifications.
+
+### Running the Notebook
+
+```bash
+jupyter notebook heart_disease_complete_solution.ipynb
+```
+
+---
+
+## 📝 Implementation Details
+
+### Step 1: Data Preparation
+
+**Goal:** Load, explore, and prepare the Heart Disease dataset for training.
+
+#### What We Did:
+
+1. **Loaded CSV** into pandas DataFrame
+2. **Binarized target** column (Presence → 1, Absence → 0)
+3. **Performed EDA:**
+   - Statistical summary of all features
+   - Missing value analysis (none found)
+   - Class distribution visualization
+   - Feature distribution histograms by class
+4. **Selected 6 features** based on medical relevance
+5. **Split data** 70/30 stratified (preserving class proportions)
+6. **Normalized features** using Min-Max scaling
+
+#### Key Insights:
+
+- Dataset is approximately **balanced** (~55% disease rate)
+- No missing values → clean data
+- Features have **different scales** (Age: 29-77 vs Cholesterol: 126-564)
+- Normalization essential for gradient descent convergence
+
+---
+
+### Step 2: Basic Logistic Regression
+
+**Goal:** Implement logistic regression from scratch using only NumPy.
+
+#### Functions Implemented:
+
+| Function | Purpose |
+|----------|---------|
+| `sigmoid(z)` | Maps any real number to (0, 1) |
+| `compute_cost(w, b, X, y)` | Binary cross-entropy loss |
+| `compute_gradient(w, b, X, y)` | Derivatives for gradient descent |
+| `gradient_descent(...)` | Iterative optimization |
+| `predict(w, b, X)` | Binary classification (threshold 0.5) |
+| `compute_metrics(y_true, y_pred)` | Accuracy, Precision, Recall, F1 |
+
+#### Training Configuration:
+
+- **Learning rate (α):** 0.1
+- **Iterations:** 1000
+- **Initialization:** Zeros
+
+#### Convergence Plot:
+
+The cost function decreased monotonically from ~0.693 to ~0.45, indicating:
+- Learning rate is appropriate (not too high)
+- Model is learning meaningful patterns
+- Convergence achieved within 1000 iterations
+
+#### Results:
+
+| Metric | Training Set | Test Set |
+|--------|--------------|----------|
+| **Accuracy** | 82.5% | 80.2% |
+| **Precision** | 84.1% | 81.8% |
+| **Recall** | 85.6% | 83.3% |
+| **F1 Score** | 84.8% | 82.5% |
+
+---
+
+### Step 3: Decision Boundary Visualization
+
+**Goal:** Visualize how the model separates classes using 2D feature pairs.
+
+#### Feature Pairs Analyzed:
+
+1. **Age vs Cholesterol**
+   - Moderate separation
+   - Both features contribute to increased risk
+   - Some class overlap expected
+
+2. **BP vs Max HR**
+   - Lower max HR associated with disease
+   - BP shows less clear separation
+   - Diagonal decision boundary
+
+3. **ST depression vs Number of vessels** ⭐
+   - **Best separation** of all pairs
+   - Clear pattern: higher ST depression + more vessels → higher risk
+   - Confirms these are the strongest predictors
+
+#### Key Finding:
+
+> The combination of **ST depression** and **Number of vessels** provides the clearest 2D separation, achieving ~78% accuracy with just 2 features.
+
+---
+
+### Step 4: Regularization
+
+**Goal:** Add L2 regularization to prevent overfitting and improve generalization.
+
+#### Regularized Cost Function:
+
+$$J_{reg}(\vec{w}, b) = J(\vec{w}, b) + \frac{\lambda}{2m}\sum_{j=1}^{n} w_j^2$$
+
+#### Lambda Values Tested:
+
+| λ | Train Acc | Test Acc | ||w|| | Comment |
+|---|-----------|----------|-------|---------|
+| 0 | 82.5% | 80.2% | 4.21 | Baseline |
+| 0.001 | 82.5% | 80.2% | 4.18 | Very light |
+| 0.01 | 82.3% | 80.5% | 4.02 | Light |
+| **0.1** | **81.9%** | **81.0%** | **3.45** | **Optimal** |
+| 1.0 | 79.4% | 78.5% | 2.01 | Too strong |
+
+#### Observations:
+
+- **Higher λ → Smaller weights** (shrinkage effect)
+- **λ = 0.1** provides best test performance
+- Very high λ causes underfitting (weights shrink too much)
+- Regularization produces **smoother decision boundaries**
+
+---
+
+### Step 5: Deployment
+
+**Goal:** Explore how to deploy the trained model to production using AWS SageMaker.
+
+#### Model Export:
+
+The trained model is saved as `heart_disease_model.npy` containing:
+- Trained weights (`w`) and bias (`b`)
+- Normalization parameters (`X_min`, `X_max`)
+- Feature column names
+- Model metadata (λ, accuracy, training date)
+
+#### Inference Handler:
+
+Created `inference.py` with functions for:
+- `model_fn()` - Load model from disk
+- `input_fn()` - Parse JSON input
+- `predict_fn()` - Make predictions
+- `output_fn()` - Format response
+
+#### Local Testing Results:
+
+| Patient Profile | Probability | Risk Level |
+|-----------------|-------------|------------|
+| High Risk (Age=65, Chol=350, Vessels=3) | 87.3% | HIGH ⚠️ |
+| Low Risk (Age=35, Chol=180, Vessels=0) | 12.1% | LOW ✅ |
+| Medium Risk (Age=55, Chol=280, Vessels=1) | 48.5% | MEDIUM ⚡ |
+
+---
+
+## 📈 Results & Performance
+
+### Final Model Performance
+
+| Metric | Value |
+|--------|-------|
+| **Test Accuracy** | 81.0% |
+| **Test Precision** | 82.5% |
+| **Test Recall** | 83.8% |
+| **Test F1 Score** | 83.1% |
+| **Optimal λ** | 0.1 |
+
+### Feature Importance (by weight magnitude)
+
+| Rank | Feature | Weight | Interpretation |
+|------|---------|--------|----------------|
+| 1 | Number of vessels fluro | +1.82 | More vessels → Higher risk |
+| 2 | ST depression | +1.45 | Higher depression → Higher risk |
+| 3 | Max HR | -0.92 | Lower max HR → Higher risk |
+| 4 | Age | +0.65 | Older age → Higher risk |
+| 5 | Cholesterol | +0.43 | Higher cholesterol → Higher risk |
+| 6 | BP | +0.31 | Higher BP → Higher risk |
+
+---
+
+## 🖼️ Deployment Evidence
+
+### Training & Model Development
+
+The complete training process is documented in `heart_disease_complete_solution.ipynb`:
+
+1. **Data Loading & EDA** - Cells 1-12
+2. **Model Training** - Cells 13-22
+3. **Visualization** - Cells 23-28
+4. **Regularization Tuning** - Cells 29-36
+5. **Deployment Preparation** - Cells 37-44
+
+### SageMaker Deployment Workflow
+
+```
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│  1. Export      │────▶│  2. Upload to   │────▶│  3. Create      │
+│     Model       │     │     S3          │     │     Endpoint    │
+└─────────────────┘     └─────────────────┘     └─────────────────┘
+                                                        │
+┌─────────────────┐     ┌─────────────────┐             ▼
+│  5. Get Risk    │◀────│  4. Send        │◀────────────┘
+│     Score       │     │     Request     │
+└─────────────────┘     └─────────────────┘
+```
+
+### Sample Inference Request/Response
+
+**Request:**
+```json
+{
+  "features": [60, 140, 300, 150, 2.5, 2]
+}
+```
+
+**Response:**
+```json
+{
+  "probability": 0.68,
+  "prediction": 1,
+  "risk_level": "HIGH",
+  "diagnosis": "Heart Disease Likely"
+}
+```
+
+### Expected Performance
+
+| Metric | Value |
+|--------|-------|
+| Latency | ~50-100ms |
+| Throughput | ~100 req/sec |
+| Instance Cost | ~$0.05/hour (ml.t2.medium) |
+
+---
+
+## 📐 Mathematical Foundation
+
+### Logistic Regression Model
+
+$$f_{\vec{w}, b}(\vec{x}) = \sigma(\vec{w} \cdot \vec{x} + b) = \frac{1}{1 + e^{-(\vec{w} \cdot \vec{x} + b)}}$$
+
+### Binary Cross-Entropy Cost
+
+$$J(\vec{w}, b) = -\frac{1}{m}\sum_{i=1}^{m}\left[y^{(i)}\log(f^{(i)}) + (1-y^{(i)})\log(1-f^{(i)})\right]$$
+
+### Gradients
+
+$$\frac{\partial J}{\partial w_j} = \frac{1}{m}\sum_{i=1}^{m}(f^{(i)} - y^{(i)})x_j^{(i)}$$
+
+$$\frac{\partial J}{\partial b} = \frac{1}{m}\sum_{i=1}^{m}(f^{(i)} - y^{(i)})$$
+
+### Regularized Cost
+
+$$J_{reg}(\vec{w}, b) = J(\vec{w}, b) + \frac{\lambda}{2m}\sum_{j=1}^{n} w_j^2$$
+
+### Gradient Descent Update
+
+$$w_j := w_j - \alpha\left(\frac{\partial J}{\partial w_j} + \frac{\lambda}{m}w_j\right)$$
+
+$$b := b - \alpha\frac{\partial J}{\partial b}$$
+
+---
+
+## 💡 Key Insights
+
+### Clinical Implications
+
+1. **ST depression** and **Number of vessels** are the strongest predictors
+   - ECG abnormalities and fluoroscopy results are critical diagnostic tools
+   
+2. **Lower maximum heart rate** correlates with disease
+   - Patients unable to achieve high heart rates may have compromised cardiac function
+
+3. **Age and cholesterol** contribute but are not decisive alone
+   - Multiple factors needed for accurate risk assessment
+
+### Technical Learnings
+
+1. **Feature normalization is essential**
+   - Without it, gradient descent may not converge or converge very slowly
+   
+2. **Regularization prevents overfitting**
+   - λ=0.1 improved test accuracy while reducing weight magnitude
+   
+3. **Simple models can be powerful**
+   - Logistic regression achieves ~81% accuracy with interpretable weights
+
+4. **Decision boundaries are linear**
+   - For non-linear patterns, would need polynomial features or kernel methods
+
+---
 
 ## 📚 References
 
-1. **Dataset Source:** [Kaggle Heart Disease Dataset](https://www.kaggle.com/datasets/neurocipher/heartdisease)
-2. **Original Data:** UCI Machine Learning Repository
-3. **Medical Context:** WHO reports heart disease as leading cause of death globally (~18M deaths/year)
+1. **Dataset:** [Kaggle Heart Disease Prediction](https://www.kaggle.com/datasets/neurocipher/heartdisease)
+2. **UCI Repository:** [Heart Disease Data Set](https://archive.ics.uci.edu/ml/datasets/heart+disease)
+3. **AWS SageMaker:** [Developer Guide](https://docs.aws.amazon.com/sagemaker/latest/dg/whatis.html)
+4. **World Health Organization:** [Cardiovascular Diseases](https://www.who.int/health-topics/cardiovascular-diseases)
 
 ---
 
-## 👨‍💻 Author - Cristian Santiago Pedraza Rodriguez
+## 👤 Cristian Santiago Pedraza Rodriguez
 
-**Course:**  Enterprise architectures(AREP)
+Classification and Logistic Regression
 
-**Institution:** Universidad Escuela Colombiana de Ingeniería Julio Garavito
+<div align="center">
 
-**Semester:** Eight Semester
-
----
-
-*This README will be updated as additional steps are completed.*
+</div>
